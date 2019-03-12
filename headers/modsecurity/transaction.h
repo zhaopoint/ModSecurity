@@ -424,7 +424,7 @@ class Transaction : public TransactionAnchoredVariables, public TransactionSecMa
 #ifndef NO_LOGS
     void debug(int, std::string) const;
 #endif
-    void serverLog(std::shared_ptr<RuleMessage> rm);
+    void serverLog(RuleWithActions *ra, RuleMessage *rm);
 
     int getRuleEngineState();
 
