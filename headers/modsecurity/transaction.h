@@ -102,6 +102,7 @@ class ModSecurity;
 class Transaction;
 class RulesSet;
 class RuleMessage;
+class RuleWithActions;
 namespace actions {
 class Action;
 namespace disruptive {
@@ -316,8 +317,38 @@ class TransactionSecMarkerManagement {
     std::shared_ptr<std::string> m_marker;
 };
 
+class TransactionRuleMessageManagement {
+ public:
+    TransactionRuleMessageManagement(Transaction *t)
+        : m_transaction(t),
+        m_noAuditLog(false) { };
+
+    RuleMessage *messageGetLast();
+    void messageNew();
+    void messageLog(RuleWithActions *rule);
+
+    void messageSetNoAuditLog(bool a) {
+        m_noAuditLog = a;
+    }
+    bool messageSaveAuditLog() {
+        return m_noAuditLog;
+    }
+    /**
+     * This variable holds all the messages asked to be save by the utilization
+     * of the actions: `log_data' and `msg'. These should be included on the
+     * auditlogs.
+     */
+    std::list<std::shared_ptr<modsecurity::RuleMessage>> m_rulesMessages;
+
+ private:
+    Transaction *m_transaction;
+    bool m_noAuditLog;
+};
+
+
 /** @ingroup ModSecurity_CPP_API */
-class Transaction : public TransactionAnchoredVariables, public TransactionSecMarkerManagement {
+class Transaction : public TransactionAnchoredVariables, public TransactionSecMarkerManagement, \
+    public TransactionRuleMessageManagement {
  public:
     Transaction(ModSecurity *transaction, RulesSet *rules, void *logCbData);
     Transaction(ModSecurity *transaction, RulesSet *rules, char *id,
@@ -521,13 +552,6 @@ class Transaction : public TransactionAnchoredVariables, public TransactionSecMa
      *
      */
     std::list< std::pair<int, std::string> > m_auditLogModifier;
-
-    /**
-     * This variable holds all the messages asked to be save by the utilization
-     * of the actions: `log_data' and `msg'. These should be included on the
-     * auditlogs.
-     */
-    std::list<modsecurity::RuleMessage> m_rulesMessages;
 
     /**
      * Holds the request body, in case of any.
