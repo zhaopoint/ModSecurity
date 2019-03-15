@@ -108,8 +108,12 @@ class RuleMessage {
         m_rule = rule;
     }
 
+    void settle(bool a) {
+        m_isSettle = a;
+    }
+
     bool isSettle() {
-        return m_rule != nullptr;
+        return m_isSettle;
     }
 
     int getRuleId();
@@ -152,7 +156,8 @@ class RuleMessage {
     std::string m_reference;
 
  private:
-     bool m_saveMessage:1;
+    bool m_saveMessage:1;
+    bool m_isSettle:1;
     Transaction *m_transaction;
     RuleWithActions *m_rule;
 };

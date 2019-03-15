@@ -74,7 +74,8 @@ void TransactionRuleMessageManagement::messageNew() {
 }
 
 void TransactionRuleMessageManagement::messageLog(RuleWithActions *rule) {
-     m_rulesMessages.back()->setRule(rule);
+    m_rulesMessages.back()->settle(true);
+    m_rulesMessages.back()->setRule(rule);
 }
 
 /**
