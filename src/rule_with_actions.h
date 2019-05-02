@@ -29,6 +29,8 @@
 #include "modsecurity/modsecurity.h"
 #include "modsecurity/variable_value.h"
 #include "modsecurity/rule.h"
+#include "modsecurity/rules_set.h"
+#include "modsecurity/rule_message.h"
 
 #ifdef __cplusplus
 
@@ -114,6 +116,25 @@ class RuleWithActions : public Rule {
         Action *a,
         bool context);
 
+    void executeAsDefaulAction(Transaction *trans,
+        Action *a,
+        bool context);
+
+    inline void executeBlockAction(Transaction *transaction) noexcept {
+        for (auto &a : transaction->m_rules->m_defaultActions[getPhase()]) {
+            if (a->isDisruptive() == false) {
+                continue;
+            }
+            if (transaction->getRuleEngineState() != RulesSet::EnabledRuleEngine) {
+                ms_dbg_a(transaction, 4, "Not running any disruptive action (or block): " \
+                    + *a->m_name.get() + ". SecRuleEngine is not On.");
+                continue;
+            }
+
+            transaction->messageGetLast()->setRule(this);
+            a->execute(transaction);
+        }
+    };
 
     inline void executeTransformation(
         Transaction *transaction,

@@ -1421,7 +1421,7 @@ std::string Transaction::toOldAuditLogFormatIndex(const std::string &filename,
     /** TODO: Check variable */
     variables::RemoteUser *r = new variables::RemoteUser("REMOTE_USER");
     std::vector<const VariableValue *> l;
-    r->evaluate(this, NULL, &l);
+    r->evaluate(this, &l);
     delete r;
 
     ss << utils::string::dash_if_empty(
@@ -1545,6 +1545,7 @@ std::string Transaction::toOldAuditLogFormat(int parts,
     if (parts & audit_log::AuditLog::HAuditLogPart) {
         audit_log << "--" << trailer << "-" << "H--" << std::endl;
         for (auto &a : m_rulesMessages) {
+            if (a->getRule() == nullptr) continue;
             audit_log << a->log(0, m_httpCodeReturned) << std::endl;
         }
         audit_log << std::endl;
@@ -1707,7 +1708,9 @@ std::string Transaction::toJSON(int parts) {
             reinterpret_cast<const unsigned char*>("messages"),
             strlen("messages"));
         yajl_gen_array_open(g);
-        for (auto a : m_rulesMessages) {
+        for (auto &a : m_rulesMessages) {
+            if (a->getRule() == nullptr) continue;
+
             yajl_gen_map_open(g);
             LOGFY_ADD("message", a->m_message.c_str());
             yajl_gen_string(g,
@@ -1767,8 +1770,7 @@ std::string Transaction::toJSON(int parts) {
 }
 
 
-void Transaction::serverLog(RuleWithActions *ra, RuleMessage *rm) {
-    rm->setRule(ra);
+void Transaction::serverLog(RuleMessage *rm) {
     m_ms->serverLog(m_logCbData, rm);
 }
 
