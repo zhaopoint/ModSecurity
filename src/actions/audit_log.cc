@@ -27,7 +27,7 @@ namespace modsecurity {
 namespace actions {
 
 
-bool AuditLog::execute(Transaction *transaction) {
+bool AuditLog::execute(Transaction *transaction) noexcept {
     transaction->messageSetNoAuditLog(false);
     ms_dbg_a(transaction, 9, "Saving transaction to logs");
 
